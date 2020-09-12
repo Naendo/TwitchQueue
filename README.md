@@ -21,8 +21,7 @@ The TalkMaster is an ASP.NET Core 3.0 Twitch Bot using TwitchLib and SignalR.
 
 ## How to use the TalkMaster
 
-The queue bot recently got [published](https://talkmaster.azurewebsites.net/). 
-
+Talkmaster is currently offline!
 - SignIn with your personal Twitch Account.
 - Connect your Bot.
 - Join your personal Twitch Account with **twitch.tv/[UserName]**. E.g. https://www.twitch.tv/papaplatte
