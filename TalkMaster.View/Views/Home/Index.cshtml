@@ -1,0 +1,157 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - QueueBot";
+    var channel = (User)ViewData["user"];
+}
+
+
+<section id="side-bar">
+    <div id="side-container">
+        <a href="@Url.Action("Strike")" class="side-element"></a>
+    </div>
+</section>
+
+@*<a id="test">TEST CYKA</a>*@
+
+
+<section id="content">
+    <div id="main">
+        <div id="main-top">
+            <div class="btns">
+                <button id="join-btn" class="btn btn-success" type="button">Connect</button>
+                <button id="part-btn" class="btn btn-danger">Disconnect</button>
+            </div>
+            <div>
+                <img id="top-logo" src="@channel.ProfileImageUrl" />
+                <div id="top-menu">
+                    <a href="@Url.Action("Login")"><i class="fas fa-sign-out-alt"></i>&nbsp; Logout</a>
+                    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=Z9AHYEUQWDGG6&amp;source=url"><i class="fas fa-donate"></i>&nbsp;Donate</a>
+                </div>
+            </div>
+        </div>
+        <div id="main-bottom"></div>
+    </div>
+</section>
+
+
+<script type="text/javascript" src="/js/js.cookie.min.js"></script>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+
+<script type="text/javascript">
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("/queueHub").withAutomaticReconnect().build();
+
+    connection.onreconnecting(error => {
+        window.locaton.reload(true);
+    });
+
+    $(document).ready(async function () {
+
+        $("#top-logo").on("click",
+            function() {
+                if ($("#top-menu").css("display") === "flex")
+                    $("#top-menu").css("display", "none");
+                else
+                    $("#top-menu").css("display", "flex");
+            });
+
+
+        $("#top-menu").on("click",
+            function() {
+                logout();
+            });
+
+
+        if (Cookies.get("connection_state") === "connected") {
+            await connect();
+            await connection.invoke("fetchQueue", "@channel.DisplayName").then(function(result) {
+
+                PrintData(result);
+            });
+        } else {
+            $("#join-btn").show();
+            $("#part-btn").hide();
+        }
+    });
+
+    connection.on("ReceiveQueue", function(queue) {
+        PrintData(queue);
+    });
+
+    document.getElementById("join-btn").addEventListener("click", function () {
+        connect();
+        Cookies.set("connection_state", "connected", { expires: 1 });
+    });
+
+    document.getElementById("part-btn").addEventListener("click", function() {
+        disconnect();
+        disposeConnection();
+    });
+
+    function PrintData(queue) {
+        $("#main-bottom").empty();
+
+        for (var i = 0; i < queue.length; i++) {
+
+            document.getElementById("main-bottom").innerHTML += "<div class='entry'>" +
+                "<div class='entry-content'>" +
+                "<div>#" +
+                (i + 1) +
+                "</div>" +
+                "<div>" +
+                queue[i] +
+                "</div>" +
+                "</div>" +
+                "<div class='entry-icons'>" +
+                "<button value='" + i + "' class='entry-close' alt='close'></button>" +
+                "</div>" +
+                "" +
+                "</div>";
+        }
+        RegisterImageEvents();
+    }
+
+    function RegisterImageEvents() {
+        var buttons = document.getElementsByClassName("entry-close");
+
+        if (buttons === undefined) return;
+
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", async function (event) {
+
+                var result = await connection.invoke("RemoveAtIndex", "@channel.DisplayName", event.toElement.value);
+                PrintData(result.updatedContent);
+            });
+        }
+    }
+
+    async function connect() {
+        $("#join-btn").prop('disabled', true);
+        await connection.start();
+        await  connection.invoke("Connecting", "@channel.DisplayName");
+        $("#join-btn").hide();
+        $("#part-btn").show();
+        $("#join-btn").prop('disabled', false);
+    }
+
+    async function disconnect() {
+        $("#part-btn").prop('disabled', true);
+
+        await connection.invoke("disconnecting");
+
+        await connection.stop();
+        $("#join-btn").show();
+        $("#part-btn").hide();
+        $("#part-btn").prop('disabled', false);
+    }
+
+    function logout() {
+        Cookies.remove("user");
+        Cookies.remove("connection_state");
+    }
+
+    function disposeConnection() {
+        $("#main-bottom").empty();
+        Cookies.set("connection_state", "disconnected", {expires:1});
+    }
+</script>

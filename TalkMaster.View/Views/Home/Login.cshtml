@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Login";
+    var token = ViewData["token"] as TokenOptions;
+
+}
+
+
+
+
+<section id="login-container">
+
+    <img src="resources/GitHubProfile.png" class="login-left" />
+
+    <div class="login-right">
+        <h1 class="display-3">Sign into TalkMaster</h1>
+
+        <a id="login-btn" class="btn btn-primary btn-twitch" href="https://id.twitch.tv/oauth2/authorize?response_type=code&force_verify=@token.ForceVerifyLower&client_id=@token.ClientId&redirect_uri=@token.RedirectUri&scopes=user_read">
+            Login with Twitch
+        </a>
+    </div>
+</section>
+
+
