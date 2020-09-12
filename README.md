@@ -4,10 +4,6 @@
 
 The TalkMaster is an interactive Chatbot for the plattform [twitch.tv](https://www.twitch.tv/) which is working with **Queues** only!
 
-## Technologies
-
-The TalkMaster is an ASP.NET Core 3.0 Twitch Bot using TwitchLib and SignalR. 
-
 ## Commands 
 
 - !qwho [Index] = Who is in the Queue currently?
